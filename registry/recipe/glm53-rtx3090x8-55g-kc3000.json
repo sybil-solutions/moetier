@@ -1,0 +1,108 @@
+{
+  "id": "glm53-rtx3090x8-55g-kc3000",
+  "status": "experiment",
+  "note": "glm53-rtx3090-55g-nvx4 (v4.1-nvme image) on a 5950X / 2-channel DDR4 / x8 / one x2 NVMe box with a 55 GiB container cap. Measured, below the local-ai-registry 15 tok/s C1 gate, so not proposed as a registry candidate. Budget: ram_gb is the docker cap in GB (55 GiB); runtime_gb = the engine's rcs reserve 4 GiB + margin 3 GiB + prefill ring 1.69 GiB, other_gb = process memory when the tier is sized (5.89 GiB) rounded so the simulated RAM tier matches the engine-reported 4565 slots. lane_overrides are the pre-run estimates used for the prediction in the run record: zerocopy = 9,474,048 B / 13.5 GB/s, cpu = 0.25 ms/expert guessed for 13 lane threads at 3.4 GHz on 2-channel DDR4 (not measured; see calibration.derived).",
+  "model": "glm-5.3-flash-exl3-3.05bpw",
+  "hardware": "omarchy-gpu-rtx3090x8-kc3000",
+  "engines": [
+    "exllamav3-cuda",
+    "avx2-exl3-cpu"
+  ],
+  "budget": {
+    "ram_gb": 59.06,
+    "runtime_gb": 9.33,
+    "other_gb": 6.4,
+    "vram_expert_slots": 1376,
+    "measured": {
+      "ram_slots": 4565,
+      "vram_resident_after_warm": 1344,
+      "source": "engine startup log (nv2 RAM tier, post-warm)"
+    }
+  },
+  "lane_overrides": {
+    "zerocopy": {
+      "per_expert_ms": 0.7
+    },
+    "cpu": {
+      "per_expert_ms": 0.25
+    }
+  },
+  "policy": {
+    "vram": "clock, admit GPU-routed misses",
+    "ram": "exclusive",
+    "seed": "frequency",
+    "exact": "stall",
+    "overlap": true,
+    "prefetch": {
+      "depth": 1,
+      "recall": 0.0
+    }
+  },
+  "calibration": {
+    "fixed_ms": {
+      "1": 14.0,
+      "2": 20.0,
+      "4": 30.0
+    },
+    "prefill": {
+      "chunk": 8192,
+      "compute_ms_per_layer": 176.35,
+      "first_request_ms": 4130
+    },
+    "source": "copied from glm53-rtx3090-55g-nvx4 (G067, EPYC + x16); not measured on this box",
+    "derived": {
+      "cpu_per_expert_ms": 0.48,
+      "label": "DERIVED, not measured: from the 90 GiB run's kit C1 10.95 tok/s with per-token ms = fixed 14 + cpu lane, holding the sim's lane split (arithmetic in runs/omarchy-gpu-glm53-v41-nvme-90g.json sim.derived_cpu_per_expert_ms). Not applied in lane_overrides, so `sim` still reproduces the recorded prediction; try it with --set 'lane_overrides={\"zerocopy\":{\"per_expert_ms\":0.7},\"cpu\":{\"per_expert_ms\":0.48}}'.",
+      "run": "omarchy-gpu-glm53-v41-nvme-90g"
+    }
+  },
+  "serve": {
+    "image": "ghcr.io/sybil-solutions/glm53-flash-offload@sha256:99b8926e01480b1acc35251a60f61cba6a2ad6309491a6ab2bb6b5688f843c16",
+    "tag": "v4.1-nvme",
+    "repo": "https://github.com/0xSero/glm53-flash-offload",
+    "repo_commit": "7f1ee89",
+    "built_by": "https://github.com/sybil-solutions/local-ai-images/actions/runs/37628249109",
+    "docker_flags": [
+      "--gpus",
+      "\"device=2\"",
+      "--memory",
+      "55g",
+      "--memory-swap",
+      "55g",
+      "--shm-size",
+      "1g",
+      "--ulimit",
+      "memlock=-1",
+      "--cpuset-cpus",
+      "1,3-16,19-31",
+      "--network",
+      "host"
+    ],
+    "mounts": {
+      "/models": "<GLM-5.3-Flash-exl3 3.05bpw checkpoint (turboderp/GLM-5.3-Flash-exl3 @ 332ab457), ro>",
+      "/nvx": "<packed expert store on the KC3000, btrfs dir with chattr +C (NOCOW), ro>"
+    },
+    "store": {
+      "build": "docker run --rm -v <model>:/models:ro -v <store>:/nvx IMAGE pack-store",
+      "verify": "IMAGE verify-store",
+      "measured": "pack-store 88 s; verify-store 117.33 GB O_DIRECT + sha256 at 2.48 GB/s, bad 0",
+      "bytes": 117326610432
+    },
+    "modes": {
+      "nvme": {
+        "env": {
+          "GLM53_MODE": "nvme",
+          "PORT": "30000",
+          "GLM53_EC_MAX_SLOTS": "1376",
+          "GLM53_MAIN_CPUS": "1",
+          "GLM53_NV_CTL_CPU": "16",
+          "GLM53_NV_CPU_CPUS": "3-15",
+          "GLM53_NV_READER_CPUS": "19-31",
+          "HF_HUB_OFFLINE": "1"
+        },
+        "cpu_layout_note": "core 2 (CPUs 2,18) offline: main thread cpu1, controller cpu16, CPU lane = one thread per physical core 3-15, NVMe readers on SMT siblings 19-31; GLM53_NV_POL left at the image default (tuned for x16 + 4x RAID0)",
+        "measured_run": "omarchy-gpu-glm53-v41-nvme-55g"
+      }
+    }
+  }
+}

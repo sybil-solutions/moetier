@@ -1,0 +1,44 @@
+{
+  "id": "omarchy-gpu-rtx3090x8-kc3000",
+  "gpu": {
+    "name": "RTX 3090 (one of three; the benchmark card 0000:0c:00.0)",
+    "vram_gb": 24,
+    "link": "PCIe 4.0 x8 (CPU lanes, x8/x8 slot split)",
+    "h2d_gbps": 13.5,
+    "vram_bw_gbps": 936,
+    "note": "h2d_gbps measured: 13.5 GB/s host->device copy (the other CPU-lane card measured the same). vram_bw_gbps is the spec value, not measured."
+  },
+  "cpu": {
+    "name": "AMD Ryzen 9 5950X (core 2 = CPUs 2,18 offline; boost off, 3.4 GHz max)",
+    "cores": 15,
+    "isa": "avx2",
+    "ddr": "DDR4-3200 2-channel, 4x32 GB (128 GB)"
+  },
+  "nvme": {
+    "name": "1x Kingston KC3000 1 TB behind the X570 chipset, link PCIe 4.0 x2 (LUKS + btrfs; store dir NOCOW)",
+    "bw_gbps": 3.36,
+    "note": "measured 2026-10-08 while the GLM-5.3-Flash NVMe tier was saturated (9,474,048 B O_DIRECT records): nvme1n1 read rate over 0.1 s windows p50 3.20-3.34, p95 3.35-3.45, p99 3.38-3.54 GB/s (/proc/diskstats via moetier probe record). glm53 verify-store: 117.33 GB O_DIRECT re-read + sha256 at 2.48 GB/s (hash-bound, lower bound). bw_qd1_gbps and latency_ms not measured, so they are omitted and spec.resolve falls back to bw_gbps and 0.1 ms. The chipset uplink (PCIe 4.0 x4) is shared with another GPU, the NIC and SATA."
+  },
+  "ceilings": {
+    "vram_bw_gbps": 936,
+    "vram_note": "RTX 3090 spec, not measured",
+    "pcie_h2d_gbps": 13.5,
+    "pcie_d2h_gbps": null,
+    "pcie_raw_gbps": 15.75,
+    "pcie_nvml_sat_gbps": 14.7,
+    "pcie_note": "pcie_h2d_gbps = measured host->device copy; D2H not measured. pcie_raw_gbps = Gen4 x8 line rate.",
+    "pcie_nvml_note": "NVML rx during staged prefill (TTFT step, 8k and 32k prompts) on both RAM caps: p95 14.65-14.75, p99 14.76-14.90 GB/s = link saturation in NVML units (KB/s x 1024)",
+    "nvme_read_gbps": 3.36,
+    "nvme_measured_gbps": 3.36,
+    "nvme_note": "one x2 drive; see nvme.note",
+    "ddr_theoretical_gbps": 51.2,
+    "ddr_practical_gbps": null,
+    "ddr_note": "2ch DDR4-3200 = 51.2 GB/s theoretical. Not measured with an AVX2 read sum; the only host measurement is a 16.6 GB/s single-stream host memcpy, which is not a bandwidth ceiling, so ddr_practical_gbps is left null.",
+    "cores": 15,
+    "threads": 30,
+    "smt_sibling_offset": 16,
+    "numa_nodes": 1,
+    "gpu_power_w": 390,
+    "gpu_power_note": "board power limit reported by nvidia-smi"
+  }
+}
