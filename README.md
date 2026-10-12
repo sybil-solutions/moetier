@@ -3,7 +3,7 @@
 A minimal standard for running big MoE models on small machines: **where every expert lives, who computes it, and
 when its bytes move.** The scheduling layer is the same for every model; the model, hardware and engines are data.
 
-Like the [local-ai-registry](https://github.com/0xSero/local-ai-registry), it is data first: records under
+Like the [local-ai-registry](https://github.com/sybil-solutions/local-ai-registry), it is data first: records under
 `registry/`, one recipe that assembles them, and a tiny core that reads them.
 
 ```text
